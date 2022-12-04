@@ -1,0 +1,75 @@
+layers:
+  - name: "food"
+    title: "Restaurant and fast-food"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      $or: 
+      - 'properties.tags.amenity': 'restaurant'
+      - 'properties.tags.amenity': 'fast_food'
+  - name: "bar"
+    title: "Bar, cafe, pub, ..."
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      $or: 
+      - 'properties.tags.amenity': 'bar'
+      - 'properties.tags.amenity': 'pub'
+      - 'properties.tags.amenity': 'cafe'
+      - 'properties.tags.amenity': 'biergarten'
+      - 'properties.tags.amenity': 'nightclub'
+  - name: "hotel"
+    title: "Hotels"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      "properties.tags.tourism": "hotel"
+  - name: "playground"
+    title: "Playground"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      "properties.tags.leisure": "playground"
+  - name: "artwork"
+    title: "Art work"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      "properties.tags.tourism": "artwork"
+  - name: "bench"
+    title: "Benches"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      $or: 
+      - 'properties.tags.amenity': 'bench'
+      - 'properties.tags.bench': 'yes'
+      - 'properties.tags.bench': 'stand_up_bench'
+  - name: "toilets"
+    title: "Toilets"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      'properties.tags.amenity': 'toilets'
+  - name: "charging"
+    title: "Charging station"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      $or: 
+      - 'properties.tags.amenity': 'charging_station'
+      - 'properties.tags.disused:amenity': 'charging_station'
+      - 'properties.tags.planned:amenity': 'charging_station'
+      - 'properties.tags.construction:amenity': 'charging_station'
+  - name: "trees"
+    title: "Trees"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      'properties.tags.natural': 'tree'
+  - name: "wind"
+    title: "Wind turbines"
+    minZoom: 6
+    maxZoom: 19
+    filter:
+      'properties.tags.generator:source': 'wind'
