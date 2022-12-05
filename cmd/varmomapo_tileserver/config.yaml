@@ -56,11 +56,7 @@ layers:
     minZoom: 6
     maxZoom: 19
     filter:
-      $or: 
-      - 'properties.tags.amenity': 'charging_station'
-      - 'properties.tags.disused:amenity': 'charging_station'
-      - 'properties.tags.planned:amenity': 'charging_station'
-      - 'properties.tags.construction:amenity': 'charging_station'
+      'properties.tags.amenity': 'charging_station'
   - name: "trees"
     title: "Trees"
     minZoom: 6
