@@ -36,15 +36,6 @@ layers:
     maxZoom: 19
     filter:
       "properties.tags.tourism": "artwork"
-  - name: "bench"
-    title: "Benches"
-    minZoom: 6
-    maxZoom: 19
-    filter:
-      $or: 
-      - 'properties.tags.amenity': 'bench'
-      - 'properties.tags.bench': 'yes'
-      - 'properties.tags.bench': 'stand_up_bench'
   - name: "toilets"
     title: "Toilets"
     minZoom: 6
