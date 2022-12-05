@@ -28,7 +28,7 @@ var mainTags map[string]bool = map[string]bool{
 
 func main() {
 
-	batchSize := 10000
+	batchSize := 1000
 	collectionName := "nodes"
 
 	db, err := mongodb.New(context.Background(), os.Getenv("MONGODB_URI"), os.Getenv("MONGODB_DATABASE"))
@@ -65,7 +65,7 @@ func main() {
 		return false
 	}
 
-	features := make([]*geojson.Feature, 0, 100)
+	features := make([]*geojson.Feature, 0, batchSize)
 
 	countByTag := make(TagCounts)
 
@@ -99,8 +99,8 @@ func main() {
 		}
 	}
 
-	log.Print(countByTag.Counts(10))
-
+	log.Println(countByTag.Counts(10))
+	log.Println("imported features: ", c)
 }
 
 type TagCounts map[string]int
