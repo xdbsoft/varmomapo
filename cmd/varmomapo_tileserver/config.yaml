@@ -1,7 +1,7 @@
 layers:
   - name: "food"
     title: "Restaurant and fast-food"
-    minZoom: 6
+    minZoom: 5
     maxZoom: 19
     filter:
       $or: 
@@ -9,7 +9,7 @@ layers:
       - 'properties.tags.amenity': 'fast_food'
   - name: "bar"
     title: "Bar, cafe, pub, ..."
-    minZoom: 6
+    minZoom: 5
     maxZoom: 19
     filter:
       $or: 
@@ -20,43 +20,49 @@ layers:
       - 'properties.tags.amenity': 'nightclub'
   - name: "hotel"
     title: "Hotels"
-    minZoom: 6
+    minZoom: 5
     maxZoom: 19
     filter:
       "properties.tags.tourism": "hotel"
   - name: "playground"
     title: "Playground"
-    minZoom: 6
+    minZoom: 5
     maxZoom: 19
     filter:
       "properties.tags.leisure": "playground"
   - name: "artwork"
     title: "Art work"
-    minZoom: 6
+    minZoom: 5
     maxZoom: 19
     filter:
       "properties.tags.tourism": "artwork"
   - name: "toilets"
     title: "Toilets"
-    minZoom: 6
+    minZoom: 5
     maxZoom: 19
     filter:
       'properties.tags.amenity': 'toilets'
   - name: "charging"
     title: "Charging station"
-    minZoom: 6
+    minZoom: 5
     maxZoom: 19
     filter:
       'properties.tags.amenity': 'charging_station'
   - name: "trees"
     title: "Trees"
-    minZoom: 6
+    minZoom: 9
     maxZoom: 19
     filter:
       'properties.tags.natural': 'tree'
   - name: "wind"
     title: "Wind turbines"
-    minZoom: 6
+    minZoom: 4
     maxZoom: 19
     filter:
       'properties.tags.generator:source': 'wind'
+  - name: "nuclear"
+    title: "Nuclear reactors"
+    minZoom: 1
+    maxZoom: 19
+    filter:
+      'properties.tags.generator:source': 'nuclear'
