@@ -49,17 +49,19 @@ func toBsonD(value *yaml.Node) (bson.D, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			v, err := toValue(value.Content[2*i+1])
 			if err != nil {
 				return nil, err
 			}
+
 			d = append(d, bson.E{
 				Key:   k,
 				Value: v,
 			})
 		}
 	default:
-		return nil, fmt.Errorf("Unsupported node kind for bson.D %v", *value)
+		return nil, fmt.Errorf("unsupported node kind for bson.D %v", *value)
 	}
 
 	return d, nil
@@ -67,7 +69,7 @@ func toBsonD(value *yaml.Node) (bson.D, error) {
 
 func toBsonA(value *yaml.Node) (bson.A, error) {
 	if value.Kind != yaml.SequenceNode {
-		return nil, fmt.Errorf("Unsupported node kind for string %v", *value)
+		return nil, fmt.Errorf("unsupported node kind for string %v", *value)
 	}
 	var a bson.A
 
@@ -84,7 +86,7 @@ func toBsonA(value *yaml.Node) (bson.A, error) {
 
 func toString(value *yaml.Node) (string, error) {
 	if value.Kind != yaml.ScalarNode {
-		return "", fmt.Errorf("Unsupported node kind for string %v", *value)
+		return "", fmt.Errorf("unsupported node kind for string %v", *value)
 	}
 	return value.Value, nil
 }
@@ -98,5 +100,5 @@ func toValue(value *yaml.Node) (any, error) {
 	case yaml.SequenceNode:
 		return toBsonA(value)
 	}
-	return nil, fmt.Errorf("Unexpected node kind: %d", value.Kind)
+	return nil, fmt.Errorf("unexpected node kind: %d", value.Kind)
 }

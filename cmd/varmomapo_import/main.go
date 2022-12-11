@@ -10,11 +10,10 @@ import (
 	"github.com/paulmach/osm"
 	"github.com/paulmach/osm/osmpbf"
 	"github.com/schollz/progressbar/v3"
-
 	"github.com/xdbsoft/varmomapo/mongodb"
 )
 
-var mainTags map[string]bool = map[string]bool{
+var mainTags = map[string]bool{
 	"amenity":              true,
 	"bench":                true,
 	"disused:amenity":      true,
@@ -27,7 +26,6 @@ var mainTags map[string]bool = map[string]bool{
 }
 
 func main() {
-
 	batchSize := 1000
 	collectionName := "nodes"
 
@@ -77,10 +75,12 @@ func main() {
 		}
 
 		for _, t := range node.Tags {
-			countByTag[t.Key] += 1
+			countByTag[t.Key]++
 		}
-		c += 1
-		bar.Add(1)
+		c++
+		if err := bar.Add(1); err != nil {
+			log.Print(err)
+		}
 		if !dryRun {
 			features = append(features, convert(node))
 			if len(features) >= batchSize {
@@ -129,12 +129,12 @@ func (l ByCount) Len() int {
 func (l ByCount) Swap(i, j int) {
 	l[i], l[j] = l[j], l[i]
 }
+
 func (l ByCount) Less(i, j int) bool {
 	return l[i].Count < l[j].Count
 }
 
 func convert(node *osm.Node) *geojson.Feature {
-
 	f := geojson.NewFeature(node.Point())
 	f.ID = node.ID
 	f.Properties["id"] = node.ID

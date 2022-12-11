@@ -5,6 +5,11 @@
 *.so
 *.dylib
 
+varmomapo_import.exe
+varmomapo_import
+varmomapo_tileserver.exe
+varmomapo_tileserver
+
 # Test binary, built with `go test -c`
 *.test
 

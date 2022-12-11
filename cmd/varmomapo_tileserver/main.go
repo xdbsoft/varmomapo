@@ -20,7 +20,6 @@ var configContent []byte
 var f embed.FS
 
 func main() {
-
 	cfg, err := config.ParseYAML(configContent)
 	if err != nil {
 		log.Fatal(err)

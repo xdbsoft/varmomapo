@@ -14,11 +14,15 @@ import (
 
 	"github.com/dustin/go-heatmap/schemes"
 	"github.com/paulmach/orb/maptile"
-	"go.mongodb.org/mongo-driver/bson"
-
 	"github.com/xdbsoft/varmomapo/config"
 	"github.com/xdbsoft/varmomapo/heatmap"
 	"github.com/xdbsoft/varmomapo/mongodb"
+	"go.mongodb.org/mongo-driver/bson"
+)
+
+const (
+	TileSize  int = 256
+	DotRadius int = 16
 )
 
 type Server struct {
@@ -31,9 +35,9 @@ var urlRegex = regexp.MustCompile(`\A/.*/(\w+)/(\d+)/(\d+)/(\d+)\.(png|jpeg)\z`)
 var empty []byte
 
 func init() {
-	img := image.NewNRGBA(image.Rect(0, 0, 256, 256))
-	for x := 0; x < 256; x++ {
-		for y := 0; y < 256; y++ {
+	img := image.NewNRGBA(image.Rect(0, 0, TileSize, TileSize))
+	for x := 0; x < TileSize; x++ {
+		for y := 0; y < TileSize; y++ {
 			img.Set(x, y, color.Transparent)
 		}
 	}
@@ -45,7 +49,7 @@ func init() {
 }
 
 func (s *Server) TilesHandler(w http.ResponseWriter, r *http.Request) {
-	//Split URL
+	// Split URL
 	m := urlRegex.FindStringSubmatch(r.URL.Path)
 	if m == nil || len(m) != 6 {
 		log.Print("Invalid URL: ", r.URL.Path, m)
@@ -55,7 +59,7 @@ func (s *Server) TilesHandler(w http.ResponseWriter, r *http.Request) {
 
 	layerName := m[1]
 
-	//Decode layer
+	// Decode layer
 	filter, found := s.Config.FilterByLayer[layerName]
 	if !found {
 		log.Println("Invalid layer", layerName)
@@ -63,7 +67,7 @@ func (s *Server) TilesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Decode level, x and y
+	// Decode level, x and y
 	level, err := strconv.Atoi(m[2])
 	if err != nil {
 		log.Print("Error decoding level: ", m[2])
@@ -87,14 +91,15 @@ func (s *Server) TilesHandler(w http.ResponseWriter, r *http.Request) {
 	cached := s.getCached(r.Context(), layerName, level, x, y)
 	if cached != nil {
 		log.Println(layerName, level, x, y, "found in cache")
-		w.Write(cached)
+		if _, err := w.Write(cached); err != nil {
+			log.Printf("Write failed: %v", err)
+		}
 		return
 	}
 
 	tile := maptile.New(uint32(x), uint32(y), maptile.Zoom(level))
 
 	tileData, err := s.getRaw(r.Context(), tile, filter)
-
 	if err != nil {
 		log.Print("Error: ", level, x, y, err)
 		http.NotFound(w, r)
@@ -103,7 +108,9 @@ func (s *Server) TilesHandler(w http.ResponseWriter, r *http.Request) {
 
 	s.putInCache(r.Context(), layerName, level, x, y, tileData)
 
-	w.Write(tileData)
+	if _, err := w.Write(tileData); err != nil {
+		log.Printf("Write failed: %v", err)
+	}
 }
 
 type cacheItem struct {
@@ -117,7 +124,6 @@ type cacheItem struct {
 }
 
 func (s *Server) getCached(ctx context.Context, layerName string, level int, x int, y int) []byte {
-
 	var item cacheItem
 	filter := bson.D{
 		{Key: "layer", Value: layerName},
@@ -129,7 +135,9 @@ func (s *Server) getCached(ctx context.Context, layerName string, level int, x i
 	if err != nil {
 		return nil
 	}
-	s.DB.Inc(ctx, "cache", filter, "hit")
+	if err := s.DB.Inc(ctx, "cache", filter, "hit"); err != nil {
+		log.Printf("Inc failed: %s", err)
+	}
 	return item.Data
 }
 
@@ -150,7 +158,7 @@ func (s *Server) putInCache(ctx context.Context, layerName string, level int, x 
 }
 
 func (s *Server) getRaw(ctx context.Context, tile maptile.Tile, filter *bson.D) ([]byte, error) {
-	features, err := s.DB.FindInBBox(ctx, "nodes", tile.Bound(16./256.), filter)
+	features, err := s.DB.FindInBBox(ctx, "nodes", tile.Bound(float64(DotRadius)/float64(TileSize)), filter)
 	if err != nil {
 		log.Print("Error: ", tile, err)
 		return nil, err
@@ -170,17 +178,16 @@ func (s *Server) getRaw(ctx context.Context, tile maptile.Tile, filter *bson.D) 
 
 		points = append(points, image.Point{
 			X: int(t.X) - int(tLeftTop.X),
-			Y: 256 - (int(t.Y) - int(tLeftTop.Y)),
+			Y: TileSize - (int(t.Y) - int(tLeftTop.Y)),
 		})
 	}
 
-	dotRadius := 16
-	imageSize := image.Rect(0, 0, 256, 256)
-	limits := imageSize.Inset(-dotRadius)
+	imageSize := image.Rect(0, 0, TileSize, TileSize)
+	limits := imageSize.Inset(-DotRadius)
 
-	imgFull := heatmap.Heatmap(limits.Add(image.Pt(dotRadius, dotRadius)), points, limits, dotRadius*2, 128, schemes.PBJ)
+	imgFull := heatmap.Heatmap(limits.Add(image.Pt(DotRadius, DotRadius)), points, limits, DotRadius*2, 128, schemes.PBJ)
 
-	img := imgFull.SubImage(imageSize.Add(image.Pt(dotRadius, dotRadius)))
+	img := imgFull.SubImage(imageSize.Add(image.Pt(DotRadius, DotRadius)))
 
 	b := bytes.Buffer{}
 	if err := png.Encode(&b, img); err != nil {

@@ -19,17 +19,15 @@ type Client struct {
 }
 
 func New(ctx context.Context, uri string, database string) (*Client, error) {
-
 	log.Print("connecting to datastore")
 	// Create a new client and connect to the server
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err
 	}
 
 	// Ping the primary
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		return nil, err
 	}
 
@@ -57,26 +55,27 @@ func (c *Client) Insert(ctx context.Context, collection string, features []*geoj
 	if err != nil {
 		return err
 	}
-	//log.Print("Insert succeed: ", len(res.InsertedIDs))
 	_ = res
 	return nil
 }
 
 func (c *Client) Get(ctx context.Context, collection string, filter bson.D, doc any) error {
 	res := c.database.Collection(collection).FindOne(ctx, filter)
+
 	return res.Decode(doc)
 }
 
 func (c *Client) Put(ctx context.Context, collection string, doc any) error {
 	_, err := c.database.Collection(collection).InsertOne(ctx, doc)
+
 	return err
 }
 
 func (c *Client) Inc(ctx context.Context, collection string, filter bson.D, key string) error {
-
 	_, err := c.database.Collection(collection).UpdateOne(ctx, filter, bson.D{
-		{"$inc", bson.D{{key, 1}}},
+		{Key: "$inc", Value: bson.D{{Key: key, Value: 1}}},
 	})
+
 	return err
 }
 
@@ -86,18 +85,18 @@ func And(filters ...*bson.D) *bson.D {
 		expressions[i] = *filters[i]
 	}
 	return &bson.D{
-		{"$and", expressions},
+		{Key: "$and", Value: expressions},
 	}
 }
 
 func (c *Client) FindInBBox(ctx context.Context, collection string, bound orb.Bound, filter *bson.D) ([]*geojson.Feature, error) {
 	coll := c.database.Collection(collection)
 	match := bson.D{
-		{"geometry", bson.D{
-			{"$geoWithin", bson.D{
-				{"$geometry", bson.D{
-					{"type", "Polygon"},
-					{"coordinates", bson.A{bson.A{
+		{Key: "geometry", Value: bson.D{
+			{Key: "$geoWithin", Value: bson.D{
+				{Key: "$geometry", Value: bson.D{
+					{Key: "type", Value: "Polygon"},
+					{Key: "coordinates", Value: bson.A{bson.A{
 						bson.A{bound.Left(), bound.Bottom()},
 						bson.A{bound.Left(), bound.Top()},
 						bson.A{bound.Right(), bound.Top()},
@@ -115,7 +114,7 @@ func (c *Client) FindInBBox(ctx context.Context, collection string, bound orb.Bo
 
 	cursor, err := coll.Aggregate(ctx, bson.A{
 		bson.D{
-			{"$match", match},
+			{Key: "$match", Value: match},
 		},
 	})
 	if err != nil {
